@@ -23,3 +23,23 @@ class UTXO(BaseModel):
 
     def is_spent(self) -> bool:
         return self.status == "spent"
+
+    def to_sql_row(self) -> dict:
+        return {
+            "txid": self.txid,
+            "index": self.index,
+            "recipient": self.recipient,
+            "amount": self.amount,
+            "status": self.status
+        }
+
+    @classmethod
+    def from_sql_row(cls, row: dict) -> "UTXO":
+        return cls(
+            txid=row["txid"],
+            index=row["index"],
+            recipient=row["recipient"],
+            amount=row["amount"],
+            status=row["status"]
+        )
+

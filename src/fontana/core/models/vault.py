@@ -1,3 +1,4 @@
+import json
 from pydantic import BaseModel, Field
 from typing import List
 from fontana.core.models.utxo import UTXO
@@ -14,6 +15,32 @@ class VaultDeposit(BaseModel):
 
     def id(self) -> str:
         return f"{self.tx_hash}:{self.rollup_wallet_address}"
+    
+    def to_sql_row(self) -> dict:
+        return {
+            "depositor_address": self.depositor_address,
+            "rollup_wallet_address": self.rollup_wallet_address,
+            "vault_address": self.vault_address,
+            "tx_hash": self.tx_hash,
+            "amount": self.amount,
+            "timestamp": self.timestamp,
+            "height": self.height,
+            "processed": self.processed
+        }
+
+    @classmethod
+    def from_sql_row(cls, row: dict) -> "VaultDeposit":
+        return cls(
+            depositor_address=row["depositor_address"],
+            rollup_wallet_address=row["rollup_wallet_address"],
+            vault_address=row["vault_address"],
+            tx_hash=row["tx_hash"],
+            amount=row["amount"],
+            timestamp=row["timestamp"],
+            height=row["height"],
+            processed=row["processed"]
+        )
+
 
 class VaultWithdrawal(BaseModel):
     recipient_rollup_address: str = Field(..., description="User's rollup address requesting withdrawal")
@@ -27,3 +54,28 @@ class VaultWithdrawal(BaseModel):
 
     def id(self) -> str:
         return f"{self.tx_hash}:{self.recipient_rollup_address}"
+    
+    def to_sql_row(self) -> dict:
+        return {
+            "recipient_rollup_address": self.recipient_rollup_address,
+            "recipient_celestia_address": self.recipient_celestia_address,
+            "vault_address": self.vault_address,
+            "amount": self.amount,
+            "timestamp": self.timestamp,
+            "related_utxos_json": json.dumps([u.model_dump() for u in self.related_utxos]),
+            "tx_hash": self.tx_hash,
+            "processed_by": self.processed_by
+        }
+
+    @classmethod
+    def from_sql_row(cls, row: dict) -> "VaultWithdrawal":
+        return cls(
+            recipient_rollup_address=row["recipient_rollup_address"],
+            recipient_celestia_address=row["recipient_celestia_address"],
+            vault_address=row["vault_address"],
+            amount=row["amount"],
+            timestamp=row["timestamp"],
+            related_utxos=[UTXO(**u) for u in json.loads(row["related_utxos_json"])],
+            tx_hash=row["tx_hash"],
+            processed_by=row["processed_by"]
+        )

@@ -1,3 +1,4 @@
+import json
 from fontana.core.models.receipt import ReceiptProof
 from fontana.core.models.transaction import SignedTransaction
 from fontana.core.models.block import BlockHeader

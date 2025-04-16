@@ -1,3 +1,4 @@
+import json
 from pydantic import BaseModel, Field
 from fontana.core.models.transaction import SignedTransaction
 from fontana.core.models.block import BlockHeader
@@ -31,5 +32,22 @@ class ReceiptProof(BaseModel):
             "provider": self.tx.outputs[0].recipient,
             "amount": self.tx.outputs[0].amount,
             "endpoint": self.provider_url,
-            "full_json": self.model_dump_json()
+            "full_json": json.dumps({
+                "tx": self.tx.to_sql_row(),
+                "block_header": self.block_header.to_sql_row(),
+                "index": self.index,
+                "included_at": self.included_at,
+                "provider_url": self.provider_url
+            })
         }
+
+    @classmethod
+    def from_sql_row(cls, row: dict) -> "ReceiptProof":
+        raw = json.loads(row["full_json"])
+        return cls(
+            tx=SignedTransaction.from_sql_row(raw["tx"]),
+            block_header=BlockHeader.from_sql_row(raw["block_header"]),
+            index=raw["index"],
+            included_at=raw["included_at"],
+            provider_url=raw["provider_url"]
+        )
