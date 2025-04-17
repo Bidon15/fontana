@@ -7,12 +7,12 @@ from fontana.core.models.block import BlockHeader
 class ReceiptProof(BaseModel):
     tx: SignedTransaction = Field(..., description="Full transaction used in API call")
     block_header: BlockHeader = Field(..., description="Header of the block including this TX")
-    index: int = Field(..., ge=0, description="Position of the TX in the block")
+    output_index: int = Field(..., ge=0, description="Position of the TX in the block")
     included_at: int = Field(..., description="UTC timestamp of block inclusion")
     provider_url: str = Field(..., description="Endpoint that was called")
 
     def id(self) -> str:
-        return f"{self.tx.txid}:{self.index}"
+        return f"{self.tx.txid}:{self.output_index}"
 
     def summary(self) -> dict:
         return {
@@ -35,7 +35,7 @@ class ReceiptProof(BaseModel):
             "full_json": json.dumps({
                 "tx": self.tx.to_sql_row(),
                 "block_header": self.block_header.to_sql_row(),
-                "index": self.index,
+                "output_index": self.output_index,
                 "included_at": self.included_at,
                 "provider_url": self.provider_url
             })
@@ -47,7 +47,7 @@ class ReceiptProof(BaseModel):
         return cls(
             tx=SignedTransaction.from_sql_row(raw["tx"]),
             block_header=BlockHeader.from_sql_row(raw["block_header"]),
-            index=raw["index"],
+            output_index=raw["output_index"],
             included_at=raw["included_at"],
             provider_url=raw["provider_url"]
         )

@@ -9,9 +9,9 @@ def make_dummy_tx(txid="tx123") -> SignedTransaction:
     return SignedTransaction(
         txid=txid,
         sender_address="font1alice...",
-        inputs=[UTXORef(txid="prevtx", index=0)],
+        inputs=[UTXORef(txid="prevtx", output_index=0)],
         outputs=[
-            UTXO(txid=txid, index=0, recipient="font1provider...", amount=0.5, status="unspent")
+            UTXO(txid=txid, output_index=0, recipient="font1provider...", amount=0.5, status="unspent")
         ],
         fee=0.01,
         payload_hash="hash123",
@@ -39,7 +39,7 @@ def test_receipt_generation():
     receipt = ReceiptProof(
         tx=tx,
         block_header=header,
-        index=0,
+        output_index=0,
         included_at=1713581133,
         provider_url="https://api.example.com/summarize"
     )

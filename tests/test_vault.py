@@ -5,8 +5,8 @@ from fontana.core.models.utxo import UTXO
 
 def test_withdrawal_with_full_utxos():
     utxos = [
-        UTXO(txid="txa", index=0, recipient="font1user...", amount=2.0, status="spent"),
-        UTXO(txid="txb", index=1, recipient="font1user...", amount=3.0, status="spent"),
+        UTXO(txid="txa", output_index=0, recipient="font1user...", amount=2.0, status="spent"),
+        UTXO(txid="txb", output_index=1, recipient="font1user...", amount=3.0, status="spent"),
     ]
 
     withdrawal = VaultWithdrawal(

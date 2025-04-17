@@ -13,8 +13,8 @@ def make_dummy_tx() -> SignedTransaction:
     return SignedTransaction(
         txid=txid,
         sender_address="font1alice...",
-        inputs=[UTXORef(txid=input_txid, index=0)],
-        outputs=[UTXO(txid=txid, index=0, recipient="font1bob...", amount=1.0, status="unspent")],
+        inputs=[UTXORef(txid=input_txid, output_index=0)],
+        outputs=[UTXO(txid=txid, output_index=0, recipient="font1bob...", amount=1.0, status="unspent")],
         fee=0.01,
         payload_hash="payload123",
         timestamp=1713560000,
