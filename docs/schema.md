@@ -41,5 +41,3 @@ flowchart LR
 - **Transactions** → grouped into **Blocks**
 - **Blocks** → referenced by **Receipts** (proofs)
 - **UTXOs** → burned when fulfilling **Vault Withdrawals**
-
-You can use this diagram in documentation to explain how funds and records flow through the system.
