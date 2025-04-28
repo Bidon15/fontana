@@ -1,0 +1,16 @@
+{
+  "version": "1.0",
+  "timestamp": 1714489547,
+  "description": "Fontana testnet initial state",
+  "initial_state_root": "0000000000000000000000000000000000000000000000000000000000000000",
+  "utxos": [
+    {
+      "recipient": "mJz8xO4mBVeleX1bAzXlM1faBYlEBz57GhlN1i2xJK4=",
+      "amount": 1000.0
+    },
+    {
+      "recipient": "AZWGJQzpg7Ix5JJaCehgh2zeUKpITpx9auZdcUFnACg=",
+      "amount": 500.0
+    }
+  ]
+}

@@ -1,30 +1,33 @@
 import os
 import json
 import base64
-from nacl import signing
+from nacl.signing import SigningKey
 from nacl.encoding import Base64Encoder
-
-DEFAULT_WALLET_PATH = os.path.expanduser("~/.fontana/wallet.json")
+from fontana.core.config import config
 
 
 class Wallet:
-    def __init__(self, signing_key: signing.SigningKey):
+    def __init__(self, signing_key: SigningKey):
         self.signing_key = signing_key
         self.verify_key = signing_key.verify_key
 
     @classmethod
     def generate(cls) -> "Wallet":
-        key = signing.SigningKey.generate()
+        key = SigningKey.generate()
         return cls(key)
 
     @classmethod
-    def load(cls, path: str = DEFAULT_WALLET_PATH) -> "Wallet":
+    def load(cls, path: str = None) -> "Wallet":
+        if path is None:
+            path = str(config.wallet_path)
         with open(path, "r") as f:
             data = json.load(f)
         key_bytes = base64.b64decode(data["private_key"])
-        return cls(signing.SigningKey(key_bytes))
+        return cls(SigningKey(key_bytes))
 
-    def save(self, path: str = DEFAULT_WALLET_PATH):
+    def save(self, path: str = None):
+        if path is None:
+            path = str(config.wallet_path)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w") as f:
             json.dump({

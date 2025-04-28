@@ -1,7 +1,6 @@
 import sqlite3
 import os
-from pathlib import Path
-import json
+from fontana.core.config import config
 
 from fontana.core.models.utxo import UTXO
 from fontana.core.models.transaction import SignedTransaction
@@ -9,12 +8,9 @@ from fontana.core.models.block import Block
 from fontana.core.models.vault import VaultDeposit, VaultWithdrawal
 from fontana.core.models.receipt import ReceiptProof
 
-DB_PATH = Path.home() / ".fontana" / "ledger.db"
-os.makedirs(DB_PATH.parent, exist_ok=True)
-
 
 def get_connection():
-    return sqlite3.connect(DB_PATH)
+    return sqlite3.connect(config.db_path)
 
 
 def dict_from_row(cursor, row):
@@ -26,6 +22,9 @@ def dict_from_row(cursor, row):
 # ───────────────────────────────
 
 def init_db():
+    # Ensure the database directory exists
+    os.makedirs(config.db_path.parent, exist_ok=True)
+    
     with get_connection() as conn:
         cur = conn.cursor()
 
