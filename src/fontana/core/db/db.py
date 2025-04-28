@@ -49,7 +49,8 @@ def init_db():
             "fee REAL, "
             "payload_hash TEXT, "
             "timestamp INTEGER, "
-            "signature TEXT"
+            "signature TEXT, "
+            "block_height INTEGER"
             ")"
         )
 
@@ -151,17 +152,57 @@ def mark_utxo_spent(txid: str, output_index: int):
 
 def insert_transaction(tx: SignedTransaction):
     row = tx.to_sql_row()
+    row["block_height"] = None
+
     with get_connection() as conn:
         cur = conn.cursor()
         cur.execute(
             "INSERT INTO transactions ("
             "txid, sender_address, inputs_json, outputs_json, "
-            "fee, payload_hash, timestamp, signature"
+            "fee, payload_hash, timestamp, signature, block_height"
             ") VALUES ("
             ":txid, :sender_address, :inputs_json, :outputs_json, "
-            ":fee, :payload_hash, :timestamp, :signature"
+            ":fee, :payload_hash, :timestamp, :signature, :block_height"
             ")",
             row
+        )
+        conn.commit()
+
+
+def fetch_uncommitted_transactions(limit: int) -> list[SignedTransaction]:
+    """
+    Returns the oldest `limit` TXs which have not yet been included in any block.
+    """
+    with get_connection() as conn:
+        conn.row_factory = dict_from_row
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT * FROM transactions "
+            "WHERE block_height IS NULL "
+            "ORDER BY timestamp ASC "
+            "LIMIT :limit",
+            {"limit": limit}
+        )
+        return [SignedTransaction.from_sql_row(row) for row in cur.fetchall()]
+
+
+def mark_transactions_committed(txids: list[str], height: int):
+    """
+    Marks the given list of txids as included in block `height`.
+    """
+    if not txids:
+        return
+
+    placeholders = ",".join(f":tx{i}" for i in range(len(txids)))
+    params = {"height": height, **{f"tx{i}": tx for i, tx in enumerate(txids)}}
+
+    with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            f"UPDATE transactions "
+            f"SET block_height = :height "
+            f"WHERE txid IN ({placeholders})",
+            params
         )
         conn.commit()
 
