@@ -36,3 +36,16 @@ class Wallet:
 
     def get_address(self) -> str:
         return self.verify_key.encode(encoder=Base64Encoder).decode("utf-8")
+
+    def sign(self, message: bytes) -> str:
+        """Sign a message using the wallet's private key.
+        
+        Args:
+            message: The message to sign
+            
+        Returns:
+            str: Base64-encoded signature
+        """
+        # Use the Signer to sign the message
+        from fontana.wallet.signer import Signer
+        return Signer.sign(message=message, private_key=self.signing_key.encode())
