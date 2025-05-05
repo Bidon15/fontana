@@ -9,8 +9,16 @@ import time
 import threading
 import logging
 import hashlib
-from typing import Dict, Optional
+import sys
+import os
+from typing import Dict, Optional, Any, List
 
+# Add pylestia submodule to Python path for imports
+pylestia_path = os.path.join(os.path.dirname(__file__), 'pylestia')
+if pylestia_path not in sys.path:
+    sys.path.insert(0, pylestia_path)
+
+# Now we can import from pylestia
 from pylestia.node_api import Client
 from pylestia.types import Namespace, Blob
 
@@ -63,29 +71,34 @@ class CelestiaClient:
             logger.info(f"Celestia client initialized with namespace={self.namespace}")
     
     def _namespace_id_bytes(self, namespace_id: str) -> bytes:
-        """Convert a hex namespace ID to bytes.
-        
+        """Convert a namespace ID to bytes.
+
         Args:
-            namespace_id: Hex-encoded namespace ID
-            
+            namespace_id: Namespace ID string in hex format
+
         Returns:
             bytes: Namespace ID as bytes
         """
-        # Convert hex string to bytes
-        return bytes.fromhex(namespace_id)
+        # Convert hex string to bytes - pylestia expects 8-byte namespaces
+        try:
+            return bytes.fromhex(namespace_id)
+        except ValueError:
+            # If not valid hex, use a hash of the string instead
+            hash_obj = hashlib.sha256(namespace_id.encode())
+            return hash_obj.digest()[:8]  # Use first 8 bytes of hash
     
     def _get_namespace_for_block(self, block_height: int) -> str:
         """Generate a unique namespace ID for a block.
         
         Args:
-            block_height: Height of the block
+            block_height: Block height
             
         Returns:
-            str: Hex-encoded namespace ID
+            str: Namespace ID (hex)
         """
-        # Create a unique namespace based on our base namespace and block height
-        # In production, you might use a more sophisticated scheme
-        namespace_bytes = hashlib.sha256(f"{self.namespace}:{block_height}".encode()).digest()[:8]
+        # Create a deterministic namespace ID based on the block height and a secret
+        hash_input = f"{block_height}:{self.namespace}".encode()
+        namespace_bytes = hashlib.sha256(hash_input).digest()[:8]
         return namespace_bytes.hex()
     
     def post_block(self, block: Block) -> Optional[str]:
@@ -102,8 +115,8 @@ class CelestiaClient:
         """
         if not self.enabled:
             logger.info(f"Celestia disabled, skipping submission for block {block.header.height}")
-            # Return a mock blob reference in test mode
-            return f"mock-blob-ref-{block.header.height}"
+            # Return None when disabled
+            return None
         
         try:
             # Serialize block data to JSON
@@ -115,11 +128,11 @@ class CelestiaClient:
             
             # Create namespace and blob objects
             namespace = Namespace(namespace_bytes)
-            blob = Blob(block_data)
+            blob = Blob(namespace=namespace, data=block_data)  # Add namespace parameter
             
             # Submit blob to Celestia
             response = self.client.blob.submit(
-                namespace_id=namespace,
+                namespace_id=namespace,  # Pass the namespace object
                 data=blob,
                 gas_limit=100000,  # Adjust based on blob size
                 fee=2000           # Adjust based on network conditions
@@ -145,102 +158,116 @@ class CelestiaClient:
             logger.error(f"Error submitting block {block.header.height} to Celestia: {str(e)}")
             raise CelestiaSubmissionError(f"Failed to submit block: {str(e)}")
     
-    def fetch_block_data(self, blob_ref: str) -> Optional[Dict[str, Any]]:
-        """Fetch block data from Celestia using a blob reference.
-        
+    def fetch_block_data(self, blob_ref: str) -> Optional[Block]:
+        """Fetch block data from a blob reference.
+
         Args:
-            blob_ref: Blob reference in format "height:namespace_id"
-            
+            blob_ref: Blob reference in format "height:namespace"
+
         Returns:
-            Optional[Dict[str, Any]]: Deserialized block data or None if not found
+            Optional[Block]: The fetched block data, or None if not found
         """
         if not self.enabled:
-            logger.info(f"Celestia disabled, cannot fetch blob: {blob_ref}")
+            logger.info(f"Celestia disabled, skipping fetch for {blob_ref}")
             return None
-        
+
         try:
-            # Parse blob reference
-            parts = blob_ref.split(":")
-            if len(parts) != 2:
-                raise ValueError(f"Invalid blob reference format: {blob_ref}")
-                
-            height = int(parts[0])
-            namespace_id = parts[1]
-            namespace_bytes = self._namespace_id_bytes(namespace_id)
+            # Parse the blob reference
+            height_str, namespace_id = blob_ref.split(":")
+            height = int(height_str)
             
-            # Create namespace object
+            # Create a namespace object
+            namespace_bytes = self._namespace_id_bytes(namespace_id)
             namespace = Namespace(namespace_bytes)
             
-            # Fetch blob from Celestia
+            # Fetch blob data
             response = self.client.blob.get(
                 height=height,
                 namespace_id=namespace
             )
             
             if not response.data:
-                logger.warning(f"No blob data found for reference: {blob_ref}")
+                logger.warning(f"No data found for blob {blob_ref}")
                 return None
-                
-            # Decode and deserialize JSON data
-            block_data = json.loads(response.data[0].decode())
-            return block_data
+            
+            # Extract and parse the block data
+            return self._extract_blob_data(response.data)
             
         except Exception as e:
             logger.error(f"Error fetching blob data for reference {blob_ref}: {str(e)}")
             return None
     
+    def _extract_blob_data(self, data: List[bytes]) -> Block:
+        """Extract and parse block data from blob response.
+        
+        Args:
+            data: Blob data from Celestia
+            
+        Returns:
+            Block: The parsed block data
+        """
+        # The data comes as a list of byte arrays, but we expect just one item
+        block_json = data[0].decode('utf-8')
+        block_dict = json.loads(block_json)
+        
+        # Create a Block object from the dict
+        return Block.model_validate(block_dict)
+    
     def check_confirmation(self, namespace_id: str) -> bool:
         """Check if a block submission is confirmed on Celestia.
         
         Args:
-            namespace_id: Celestia namespace ID to check
+            namespace_id: Namespace ID of the submission to check
             
         Returns:
             bool: True if confirmed, False otherwise
         """
         if not self.enabled:
-            # Auto-confirm in mock mode after a delay
-            submission = self.pending_submissions.get(namespace_id)
-            if submission and not submission.get("confirmed"):
-                elapsed = time.time() - submission.get("submitted_at", 0)
-                if elapsed > 5:  # Mock 5-second confirmation time
-                    submission["confirmed"] = True
-                    return True
-            return submission.get("confirmed", False) if submission else False
+            logger.info(f"Celestia disabled, cannot check confirmation for {namespace_id}")
+            return False
+            
+        # Check if we have a record of this submission
+        if namespace_id not in self.pending_submissions:
+            logger.warning(f"No pending submission found for namespace {namespace_id}")
+            return False
+            
+        # Get submission details
+        submission = self.pending_submissions[namespace_id]
+        
+        # If already confirmed, no need to check again
+        if submission.get("confirmed", False):
+            return True
             
         try:
-            # Check if the namespace exists at the expected height
-            submission = self.pending_submissions.get(namespace_id)
-            if not submission:
-                return False
-                
-            celestia_height = submission.get("celestia_height")
-            if not celestia_height:
-                return False
-                
+            # Get the current height from Celestia
+            celestia_height = submission["celestia_height"]
+            
+            # Create a namespace object
             namespace_bytes = self._namespace_id_bytes(namespace_id)
             namespace = Namespace(namespace_bytes)
             
-            # Check if blob exists
+            # Check if the blob is still available at the original height
             response = self.client.blob.get(
                 height=celestia_height,
                 namespace_id=namespace
             )
             
-            confirmed = len(response.data) > 0
+            # If we got data back, the blob is confirmed
+            is_confirmed = len(response.data) > 0
             
-            if confirmed and not submission.get("confirmed"):
+            if is_confirmed:
+                # Mark as confirmed and send notification
                 submission["confirmed"] = True
-                block_height = submission.get("block_height")
                 
-                # Send notification if a notification manager is available
-                if self.notification_manager and block_height:
+                if self.notification_manager:
                     self.notification_manager.notify(
-                        notification_type=NotificationType.BLOCK_COMMITTED_TO_DA,
-                        block_height=block_height
+                        notification_type=NotificationType.BLOCK_CONFIRMED_ON_DA,
+                        block_height=submission["block_height"]
                     )
-            
-            return confirmed
+                    
+                logger.info(f"Block {submission['block_height']} confirmed on Celestia")
+                
+            return is_confirmed
             
         except Exception as e:
             logger.error(f"Error checking confirmation for namespace {namespace_id}: {str(e)}")

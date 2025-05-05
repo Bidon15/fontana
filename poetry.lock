@@ -25,18 +25,6 @@ files = [
 ]
 
 [[package]]
-name = "async-timeout"
-version = "5.0.1"
-description = "Timeout context manager for asyncio programs"
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "async_timeout-5.0.1-py3-none-any.whl", hash = "sha256:39e3809566ff85354557ec2398b55e096c8364bacac9405a7a1fa429e77fe76c"},
-    {file = "async_timeout-5.0.1.tar.gz", hash = "sha256:d9321a7a3d5a6a5e187e824d2fa0793ce379a202935782d555d6e9d2735677d3"},
-]
-
-[[package]]
 name = "certifi"
 version = "2025.4.26"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -512,27 +500,6 @@ files = [
 windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
-name = "pylestia"
-version = "0.2.1"
-description = "The Python client for working with the Celestia blockchain platform."
-optional = false
-python-versions = ">=3.10"
-groups = ["main"]
-files = [
-    {file = "pylestia-0.2.1-py3-none-any.whl", hash = "sha256:a79d2a1d8a25a12438602729cbf70080d154b0c87f0877ef5a049d36a2a56272"},
-    {file = "pylestia-0.2.1.tar.gz", hash = "sha256:987014a5759fa741e652b2b00fe7bce84dad0a80398a1160691fb1c9c753b936"},
-]
-
-[package.dependencies]
-ajsonrpc = "*"
-async-timeout = "*"
-typing-extensions = "*"
-websockets = "*"
-
-[package.extras]
-validation = ["pydantic (>=2.11.3,<3.0.0)"]
-
-[[package]]
 name = "pynacl"
 version = "1.5.0"
 description = "Python binding to the Networking and Cryptography (NaCl) library"
@@ -778,4 +745,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13"
-content-hash = "d89f8f7b24742ef533cd701d21f57fcba3b972ee68136cf0c4a4c0420ee93feb"
+content-hash = "e00fc7a3dfaf57415e61f6390f775e590ad3e3aede45306b5bf3bcadff27e505"

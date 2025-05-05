@@ -11,7 +11,8 @@ dependencies = [
     "typer (>=0.15.2,<0.16.0)",
     "pydantic (>=2.11.3,<3.0.0)",
     "requests (>=2.32.3,<3.0.0)",
-    "pylestia (>=0.2.1,<0.3.0)",
+    "websockets (>=15.0.1,<16.0.0)",
+    "ajsonrpc (>=1.2.0,<2.0.0)",
 ]
 
 [tool.poetry]
@@ -22,6 +23,16 @@ env_file = ".env"
 
 [tool.poetry.scripts]
 fontana = "fontana.cli.main:app"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+# Remove the asyncio_mode setting as it's not recognized in this version
+# The asyncio plugin can be configured with a marker instead
+addopts = "--strict-markers"
+markers = ["asyncio: mark test as using asyncio features"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

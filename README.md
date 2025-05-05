@@ -13,29 +13,34 @@ Just deploy, connect, and make money flow like a fontana.
 src/fontana/                  # Python package (created via `poetry new fontana`)
 ├── __init__.py
 
-├── core/                 # UTXO ledger, transaction validation, Celestia batcher
+├── core/                     # UTXO ledger, transaction validation, Celestia batcher
+│   ├── __init__.py
+│   └── da/                   # Data Availability (Celestia) Integration
+│       ├── client.py         # CelestiaClient for interacting with Celestia
+│       ├── poster.py         # BlobPoster daemon for submitting blocks
+│       └── pylestia/         # Pylestia Rust extension (submodule)
+
+├── wallet/                   # SSH-style wallet CLI and key management
 │   └── __init__.py
 
-├── wallet/               # SSH-style wallet CLI and key management
+├── django_plugin/            # `@charge(tia=...)` decorator + Django middleware
 │   └── __init__.py
 
-├── django_plugin/        # `@charge(tia=...)` decorator + Django middleware
+├── sdk/                      # Python SDK for API consumers (e.g. `call_paid_api()`)
 │   └── __init__.py
 
-├── sdk/                  # Python SDK for API consumers (e.g. `call_paid_api()`)
+├── cli/                      # Typer CLI: init, topup, call, balance
 │   └── __init__.py
 
-├── cli/                  # Typer CLI: init, topup, call, balance
+├── scripts/                  # Daemons (e.g. vault watcher, blob poster)
 │   └── __init__.py
 
-├── scripts/              # Daemons (e.g. vault watcher, blob poster)
-│   └── __init__.py
-
-├── examples/             # Sample provider + consumer apps
+├── examples/                 # Sample provider + consumer apps
 │   └── summarize_api/
 
-tests/                    # Unit + integration tests
+tests/                        # Unit + integration tests
 ├── test_wallet.py
+└── test_celestia_client.py   # Tests for Celestia DA integration
 ```
 
 ---
@@ -45,6 +50,10 @@ tests/                    # Unit + integration tests
 ```bash
 # Install dependencies
 poetry install
+
+# Build Pylestia Rust extension (required for Celestia DA integration)
+cd src/fontana/core/da/pylestia
+maturin develop --release
 
 # Enter virtual environment
 poetry shell

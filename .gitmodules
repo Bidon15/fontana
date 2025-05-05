@@ -1,0 +1,3 @@
+[submodule "src/fontana/core/da/pylestia"]
+	path = src/fontana/core/da/pylestia
+	url = git@github.com:Bidon15/pylestia.git
