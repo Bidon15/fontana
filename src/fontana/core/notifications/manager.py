@@ -28,6 +28,9 @@ class NotificationType(enum.Enum):
     BLOCK_SUBMITTED_TO_DA = "block_submitted_to_da"  # Block submitted to DA layer
     BLOCK_COMMITTED_TO_DA = "block_committed_to_da"  # Block successfully committed to DA layer
     BLOCK_CONFIRMED_ON_DA = "block_confirmed_on_da"  # Block confirmed on DA layer
+    # Bridge-related notification types
+    DEPOSIT_PROCESSED = "deposit_processed"  # Deposit from L1 processed successfully 
+    WITHDRAWAL_CONFIRMED = "withdrawal_confirmed"  # Withdrawal confirmation from L1
 
 
 class NotificationManager:

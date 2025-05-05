@@ -5,18 +5,33 @@ description = ""
 authors = [{ name = "Nhu Viet Nguyen", email = "braveryandglory@gmail.com" }]
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = [
-    "pytest (>=8.3.5,<9.0.0)",
-    "pynacl (>=1.5.0,<2.0.0)",
-    "typer (>=0.15.2,<0.16.0)",
-    "pydantic (>=2.11.3,<3.0.0)",
-    "requests (>=2.32.3,<3.0.0)",
-    "websockets (>=15.0.1,<16.0.0)",
-    "ajsonrpc (>=1.2.0,<2.0.0)",
+
+# Dependencies are managed in the Poetry section below
+dependencies = ["cosmpy (==0.9.3)"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
 ]
 
 [tool.poetry]
-packages = [{ include = "fontana", from = "src" }]
+name = "fontana"
+version = "0.1.0"
+description = ""
+authors = ["Nhu Viet Nguyen <braveryandglory@gmail.com>"]
+readme = "README.md"
+packages = [{include = "fontana", from = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.13,<4.0"
+pytest = "^8.3.5"
+pynacl = "^1.5.0"
+# pylestia is managed as a git submodule, not as a package dependency
+requests = "^2.32.3"
+websockets = "^15.0.1"
+ajsonrpc = "^1.2.0"
+cosmpy = {version = "0.9.3", python = ">=3.13,<4.0"}
 
 [tool.dotenv]
 env_file = ".env"
@@ -29,10 +44,10 @@ pythonpath = ["."]
 testpaths = ["tests"]
 python_files = "test_*.py"
 python_functions = "test_*"
-# Remove the asyncio_mode setting as it's not recognized in this version
 # The asyncio plugin can be configured with a marker instead
 addopts = "--strict-markers"
 markers = ["asyncio: mark test as using asyncio features"]
+asyncio_mode = "strict"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
