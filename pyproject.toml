@@ -10,6 +10,8 @@ dependencies = [
     "pynacl (>=1.5.0,<2.0.0)",
     "typer (>=0.15.2,<0.16.0)",
     "pydantic (>=2.11.3,<3.0.0)",
+    "requests (>=2.32.3,<3.0.0)",
+    "pylestia (>=0.2.1,<0.3.0)",
 ]
 
 [tool.poetry]

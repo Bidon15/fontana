@@ -253,6 +253,26 @@ def get_block_by_height(height: int) -> Block | None:
         return Block.from_sql_row(row) if row else None
 
 
+def get_latest_block():
+    """
+    Get the latest block from the database.
+    
+    Returns:
+        dict: The latest block with height and hash, or None if no blocks exist
+    """
+    with get_connection() as conn:
+        conn.row_factory = dict_from_row
+        cur = conn.cursor()
+        
+        cur.execute(
+            "SELECT height, json_extract(header_json, '$.hash') as hash "
+            "FROM blocks ORDER BY height DESC LIMIT 1"
+        )
+        
+        result = cur.fetchone()
+        return result
+
+
 # ───────────────────────────────
 # 🏦 Vault Deposits
 # ───────────────────────────────

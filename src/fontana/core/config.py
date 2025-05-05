@@ -50,26 +50,39 @@ class FontanaConfig(BaseModel):
         description="Address of the vault on L1"
     )
     
-    # Block Generation Configuration
+    # Block Generator Configuration
     block_interval_seconds: int = Field(
-        default=6,
-        description="Target interval between blocks in seconds",
-        gt=0
+        default=5,  # Changed from 60 to 5 seconds for faster blocks
+        description="Time in seconds between block generation attempts"
     )
-    max_tx_per_block: int = Field(
+    max_block_transactions: int = Field(
         default=100,
-        description="Maximum number of transactions per block"
+        description="Maximum number of transactions to include in a block"
+    )
+    
+    # Fee Configuration
+    minimum_transaction_fee: float = Field(
+        default=0.01,
+        description="Minimum fee required for all transactions"
     )
     fee_schedule_id: str = Field(
-        default="v1",
-        description="Version identifier for fee policy"
+        default="default",
+        description="ID of the fee schedule to use for transactions"
     )
     
     @field_validator('block_interval_seconds')
-    def block_interval_must_be_positive(cls, v):
-        if v <= 0:
-            raise ValueError('block_interval_seconds must be positive')
-        return v
+    def validate_block_interval(cls, value):
+        """Validate block interval is positive."""
+        if value <= 0:
+            raise ValueError("Block interval must be greater than 0")
+        return value
+    
+    @field_validator('minimum_transaction_fee')
+    def validate_minimum_fee(cls, value):
+        """Validate minimum transaction fee is non-negative."""
+        if value < 0:
+            raise ValueError("Minimum transaction fee cannot be negative")
+        return value
     
     model_config = {
         "env_prefix": "FONTANA_",
@@ -103,7 +116,8 @@ def load_config_from_env() -> FontanaConfig:
         "FONTANA_L1_NODE_URL": "l1_node_url",
         "FONTANA_L1_VAULT_ADDRESS": "l1_vault_address",
         "FONTANA_BLOCK_INTERVAL_SECONDS": "block_interval_seconds",
-        "FONTANA_MAX_TX_PER_BLOCK": "max_tx_per_block",
+        "FONTANA_MAX_BLOCK_TRANSACTIONS": "max_block_transactions",
+        "FONTANA_MINIMUM_TRANSACTION_FEE": "minimum_transaction_fee",
         "FONTANA_FEE_SCHEDULE_ID": "fee_schedule_id"
     }
     
@@ -115,8 +129,10 @@ def load_config_from_env() -> FontanaConfig:
             # Handle type conversions
             if field_name in ["db_path", "wallet_path", "genesis_file"]:
                 value = Path(value)
-            elif field_name in ["block_interval_seconds", "max_tx_per_block"]:
+            elif field_name in ["block_interval_seconds", "max_block_transactions"]:
                 value = int(value)
+            elif field_name == "minimum_transaction_fee":
+                value = float(value)
                 
             env_settings[field_name] = value
     

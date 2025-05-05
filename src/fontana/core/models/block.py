@@ -12,6 +12,7 @@ class BlockHeader(BaseModel):
     tx_count: int = Field(..., ge=0, description="Number of TXs in block")
     blob_ref: str = Field(..., description="Reference to the Celestia blob (optional)")
     fee_schedule_id: str = Field(..., description="Versioned ID for provider fee policy")
+    hash: str = Field("", description="Block hash (calculated after creation)")
 
     def id(self) -> str:
         return f"{self.height}:{self.state_root}"
@@ -24,7 +25,8 @@ class BlockHeader(BaseModel):
             "timestamp": self.timestamp,
             "tx_count": self.tx_count,
             "blob_ref": self.blob_ref,
-            "fee_schedule_id": self.fee_schedule_id
+            "fee_schedule_id": self.fee_schedule_id,
+            "hash": self.hash
         }
 
     @classmethod
@@ -36,7 +38,8 @@ class BlockHeader(BaseModel):
             timestamp=row["timestamp"],
             tx_count=row["tx_count"],
             blob_ref=row["blob_ref"],
-            fee_schedule_id=row["fee_schedule_id"]
+            fee_schedule_id=row["fee_schedule_id"],
+            hash=row["hash"]
         )
 
 

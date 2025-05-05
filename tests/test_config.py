@@ -14,9 +14,9 @@ def test_config_defaults():
     assert config.wallet_path == Path.home() / ".fontana" / "wallet.json"
     
     # Check block generation defaults
-    assert config.block_interval_seconds == 6
-    assert config.max_tx_per_block == 100
-    assert config.fee_schedule_id == "v1"
+    assert config.block_interval_seconds == 5
+    assert config.max_block_transactions == 100
+    assert config.fee_schedule_id == "default"
 
 
 def test_config_override(monkeypatch):
