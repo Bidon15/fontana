@@ -165,6 +165,29 @@ ROLLUP_DB_PATH         # Path to the rollup database
 
 ---
 
+## 📥 Current Status & Roadmap
+
+### Completed
+
+- ✅ **Core UTXO Ledger**: Full implementation of the UTXO-based ledger with transaction validation
+- ✅ **Block Generation**: Working block generator with transaction processing
+- ✅ **Celestia Integration**: Complete data availability layer using Celestia
+- ✅ **Node Operation**: Scripts for initializing and running a Fontana node
+- ✅ **Testing Core Components**: Test suite for ledger, block generation, and transaction processing
+
+### In Progress
+
+- 🔄 **L1 Bridge Implementation**: Basic bridge for Celestia implemented but needs thorough testing
+- 🔄 **Vault Watcher**: Monitoring deposits from L1 implemented but needs integration testing
+
+### Coming Soon
+
+- 📋 **Bridge Testing**: Comprehensive tests for the L1 bridge implementation
+- 📋 **Django Integration**: The `@charge(tia=...)` decorator and middleware
+- 📋 **SDK for API Consumers**: Client library for interacting with Fontana-powered APIs
+- 📋 **Wallet CLI**: SSH-style wallet management for easier key handling
+- 📋 **API Documentation**: Complete reference docs for all components
+
 ## 🎯 Core Goals
 
 - One-line monetization for Django APIs: `@charge(tia=...)`
