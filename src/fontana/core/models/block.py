@@ -11,7 +11,9 @@ class BlockHeader(BaseModel):
     timestamp: int = Field(..., description="Block timestamp (UTC)")
     tx_count: int = Field(..., ge=0, description="Number of TXs in block")
     blob_ref: str = Field(..., description="Reference to the Celestia blob (optional)")
-    fee_schedule_id: str = Field(..., description="Versioned ID for provider fee policy")
+    fee_schedule_id: str = Field(
+        ..., description="Versioned ID for provider fee policy"
+    )
     hash: str = Field("", description="Block hash (calculated after creation)")
 
     def id(self) -> str:
@@ -26,7 +28,7 @@ class BlockHeader(BaseModel):
             "tx_count": self.tx_count,
             "blob_ref": self.blob_ref,
             "fee_schedule_id": self.fee_schedule_id,
-            "hash": self.hash
+            "hash": self.hash,
         }
 
     @classmethod
@@ -39,7 +41,7 @@ class BlockHeader(BaseModel):
             tx_count=row["tx_count"],
             blob_ref=row["blob_ref"],
             fee_schedule_id=row["fee_schedule_id"],
-            hash=row["hash"]
+            hash=row["hash"],
         )
 
 
@@ -53,12 +55,14 @@ class Block(BaseModel):
             "header_json": json.dumps(self.header.to_sql_row()),
             "txs_json": json.dumps([tx.to_sql_row() for tx in self.transactions]),
             "committed": False,
-            "blob_ref": None
+            "blob_ref": None,
         }
 
     @classmethod
     def from_sql_row(cls, row: dict) -> "Block":
         return cls(
             header=BlockHeader.from_sql_row(json.loads(row["header_json"])),
-            transactions=[SignedTransaction.from_sql_row(tx) for tx in json.loads(row["txs_json"])]
+            transactions=[
+                SignedTransaction.from_sql_row(tx) for tx in json.loads(row["txs_json"])
+            ],
         )

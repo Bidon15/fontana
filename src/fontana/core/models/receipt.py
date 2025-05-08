@@ -6,7 +6,9 @@ from fontana.core.models.block import BlockHeader
 
 class ReceiptProof(BaseModel):
     tx: SignedTransaction = Field(..., description="Full transaction used in API call")
-    block_header: BlockHeader = Field(..., description="Header of the block including this TX")
+    block_header: BlockHeader = Field(
+        ..., description="Header of the block including this TX"
+    )
     output_index: int = Field(..., ge=0, description="Position of the TX in the block")
     included_at: int = Field(..., description="UTC timestamp of block inclusion")
     provider_url: str = Field(..., description="Endpoint that was called")
@@ -20,7 +22,7 @@ class ReceiptProof(BaseModel):
             "amount": self.tx.outputs[0].amount,
             "block": self.block_header.height,
             "time": self.included_at,
-            "endpoint": self.provider_url
+            "endpoint": self.provider_url,
         }
 
     def to_sql_row(self) -> dict:
@@ -32,13 +34,15 @@ class ReceiptProof(BaseModel):
             "provider": self.tx.outputs[0].recipient,
             "amount": self.tx.outputs[0].amount,
             "endpoint": self.provider_url,
-            "full_json": json.dumps({
-                "tx": self.tx.to_sql_row(),
-                "block_header": self.block_header.to_sql_row(),
-                "output_index": self.output_index,
-                "included_at": self.included_at,
-                "provider_url": self.provider_url
-            })
+            "full_json": json.dumps(
+                {
+                    "tx": self.tx.to_sql_row(),
+                    "block_header": self.block_header.to_sql_row(),
+                    "output_index": self.output_index,
+                    "included_at": self.included_at,
+                    "provider_url": self.provider_url,
+                }
+            ),
         }
 
     @classmethod
@@ -49,5 +53,5 @@ class ReceiptProof(BaseModel):
             block_header=BlockHeader.from_sql_row(raw["block_header"]),
             output_index=raw["output_index"],
             included_at=raw["included_at"],
-            provider_url=raw["provider_url"]
+            provider_url=raw["provider_url"],
         )

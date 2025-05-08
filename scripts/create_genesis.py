@@ -107,10 +107,12 @@ def initialize_ledger(genesis_file: str):
     
     # Create and insert genesis block
     genesis_block = create_genesis_block(genesis_state)
-    db.insert_block(genesis_block)
     
-    # Mark the genesis block as committed
-    db.mark_block_committed(genesis_block.header.height, genesis_block.header.blob_ref)
+    # Use save_block which handles both insertion and marking transactions as committed
+    db.save_block(genesis_block)
+    
+    # Note: We don't need to call mark_block_committed separately
+    # as save_block handles this for us with the committed=1 flag
     
     print(f"Successfully initialized ledger with genesis state.")
     print(f"- Created block 0 with state root: {genesis_state.initial_state_root}")

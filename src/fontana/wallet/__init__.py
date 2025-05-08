@@ -1,3 +1,3 @@
 from .wallet import Wallet
 
-__all__ = ['Wallet']
+__all__ = ["Wallet"]

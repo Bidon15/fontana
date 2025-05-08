@@ -4,7 +4,9 @@ from typing import Literal
 
 class UTXORef(BaseModel):
     txid: str = Field(..., description="ID of the transaction that created the UTXO")
-    output_index: int = Field(..., description="output_index of the output in the transaction")
+    output_index: int = Field(
+        ..., description="output_index of the output in the transaction"
+    )
 
     def to_key(self) -> str:
         return f"{self.txid}:{self.output_index}"
@@ -12,7 +14,9 @@ class UTXORef(BaseModel):
 
 class UTXO(BaseModel):
     txid: str = Field(..., description="ID of the transaction that created this output")
-    output_index: int = Field(..., description="output_index of the output in the transaction")
+    output_index: int = Field(
+        ..., description="output_index of the output in the transaction"
+    )
     recipient: str = Field(..., description="Address that can spend this output")
     amount: float = Field(..., gt=0, description="Amount in TIA")
 
@@ -30,7 +34,7 @@ class UTXO(BaseModel):
             "output_index": self.output_index,
             "recipient": self.recipient,
             "amount": self.amount,
-            "status": self.status
+            "status": self.status,
         }
 
     @classmethod
@@ -40,6 +44,5 @@ class UTXO(BaseModel):
             output_index=row["output_index"],
             recipient=row["recipient"],
             amount=row["amount"],
-            status=row["status"]
+            status=row["status"],
         )
-

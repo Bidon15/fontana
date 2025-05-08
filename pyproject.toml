@@ -7,7 +7,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 
 # Dependencies are managed in the Poetry section below
-dependencies = ["cosmpy (==0.9.3)"]
+dependencies = ["cosmpy (==0.9.3)", "dotenv (>=0.9.9,<0.10.0)", "black (>=25.1.0,<26.0.0)"]
 
 [project.optional-dependencies]
 dev = [

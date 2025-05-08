@@ -29,7 +29,7 @@ class SignedTransaction(BaseModel):
             "fee": self.fee,
             "payload_hash": self.payload_hash,
             "timestamp": self.timestamp,
-            "signature": self.signature
+            "signature": self.signature,
         }
 
     @classmethod
@@ -42,6 +42,5 @@ class SignedTransaction(BaseModel):
             fee=row["fee"],
             payload_hash=row["payload_hash"],
             timestamp=row["timestamp"],
-            signature=row["signature"]
+            signature=row["signature"],
         )
-
