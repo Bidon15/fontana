@@ -252,7 +252,18 @@ class Ledger:
             )
             existing_tx = cursor.fetchone()
 
-            if existing_tx and existing_tx[1] is not None and existing_tx[1] >= 0:
+            if existing_tx:
+                # Handle both tuple and dict return types from database
+                if isinstance(existing_tx, dict):
+                    block_height = existing_tx.get("block_height")
+                    if block_height is not None and block_height >= 0:
+                        # This transaction is already in a block, nothing to do
+                        connection.rollback()
+                        return True
+                elif len(existing_tx) > 1 and existing_tx[1] is not None and existing_tx[1] >= 0:
+                    # This transaction is already in a block, nothing to do
+                    connection.rollback()
+                    return True
                 # This transaction is already in a block, nothing to do
                 connection.rollback()
                 return True
@@ -264,7 +275,15 @@ class Ledger:
                     (utxo_ref.txid, utxo_ref.output_index),
                 )
                 utxo_status = cursor.fetchone()
-                if not utxo_status or utxo_status[0] != "unspent":
+                if not utxo_status:
+                    connection.rollback()
+                    raise InputSpentError(
+                        f"Input UTXO already spent or doesn't exist: {utxo_ref.to_key()}"
+                    )
+                
+                # Handle both tuple and dict return types from database
+                status = utxo_status[0] if isinstance(utxo_status, tuple) else utxo_status.get("status")
+                if status != "unspent":
                     connection.rollback()
                     raise InputSpentError(
                         f"Input UTXO already spent or doesn't exist: {utxo_ref.to_key()}"

@@ -5,6 +5,23 @@ from fontana.core.models.utxo import UTXO, UTXORef
 
 
 class SignedTransaction(BaseModel):
+
+    def verify_signature(self) -> bool:
+        """Verify the transaction signature.
+        
+        This is a helper method for transaction validation.
+        It delegates to the Signer class for actual verification.
+        
+        Returns:
+            bool: True if signature is valid
+        """
+        # Import here to avoid circular imports
+        from fontana.core.crypto.signer import Signer
+        return Signer.verify(
+            self.payload_hash, 
+            self.signature, 
+            self.sender_address
+        )
     txid: str = Field(..., description="Unique transaction ID (hash of contents)")
     sender_address: str = Field(..., description="Wallet address that signed the TX")
     inputs: List[UTXORef] = Field(..., description="UTXOs being consumed")
